@@ -9,6 +9,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
 use craft\models\FieldLayout as CraftFieldLayout;
 
 class FieldLayout extends CraftFieldLayout
@@ -48,6 +49,8 @@ class FieldLayout extends CraftFieldLayout
     {
         $elements = [];
 
+        Formie::log("getVisibleCustomFieldElements");
+
         // When using `setFieldSettings()` settings are only applied for `getCustomFields()` and not
         // for individual field layout elements. Fetch them here so we update shortly.
         $customFields = ArrayHelper::index($this->getCustomFields(), 'handle');
@@ -75,6 +78,9 @@ class FieldLayout extends CraftFieldLayout
 
                         // Organise fields, so they're easier to check against
                         $currentPageFieldHandles = ArrayHelper::getColumn($currentPageFields, 'handle');
+
+                        Formie::log("currentPageFieldHandles: " . Json::encode($currentPageFieldHandles, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
 
                         if (!in_array($field->handle, $currentPageFieldHandles)) {
                             $isVisible = false;

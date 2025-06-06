@@ -561,8 +561,12 @@ class SubmissionsController extends Controller
         // Determine the next page to navigate to. Be sure to fallback to the current page, as `nextPage = null`
         // signifies the end of the form.
         if (is_numeric($goToPageId)) {
+            Formie::log("is_numeric goToPageId condition: " . Json::encode(ArrayHelper::firstWhere($form->getPages(), 'id', $goToPageId), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
             $nextPage = ArrayHelper::firstWhere($form->getPages(), 'id', $goToPageId) ?? $form->getCurrentPage();
         } else if ($submitAction === 'back') {
+            Formie::log("submitAction back condition: " . Json::encode($form->getPreviousPage(null, $submission, true), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
             $nextPage = $form->getPreviousPage(null, $submission, true) ?? $form->getCurrentPage();
         } else if ($submitAction === 'save') {
             $nextPage = $form->getCurrentPage();
@@ -572,8 +576,12 @@ class SubmissionsController extends Controller
 
         Formie::log("currentPage after condition: " . Json::encode($form->getCurrentPage(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
+        Formie::log("nextPage after condition: " . Json::encode($nextPage, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
         $defaultStatus = $form->getDefaultStatus();
         $errorMessage = $form->settings->getErrorMessage();
+
+        Formie::log("submitAction after condition: " . $submitAction);
 
         // Only validate when submitting
         if ($submitAction === 'submit') {
@@ -581,6 +589,8 @@ class SubmissionsController extends Controller
             $submission->setScenario(Element::SCENARIO_LIVE);
             $submission->validateCurrentPageOnly = true;
         }
+
+        Formie::log("nextPage before check: " . Json::encode($nextPage, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
         // Check if we're on the last page of the form, or need to keep going
         if (empty($nextPage)) {
@@ -603,11 +613,17 @@ class SubmissionsController extends Controller
         $submission = $event->submission;
         $form = $event->form;
 
+        Formie::log("submitAction after event: " . $submitAction);
+        Formie::log("isValid after event: " . $event->isValid);
+
         // Only validate for submitting, and if the event has marked it as invalid. If the event adds errors to the submission
         // model, and `validate()` is run again, it'll clear any errors. Instead, skip straight to regular error handling.
         if ($submitAction === 'submit' && $event->isValid) {
             $submission->validate();
         }
+
+        Formie::log("submission hasErrors: " . Json::encode($submission->hasErrors(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        Formie::log("submission errors: " . Json::encode($submission->getErrors(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
         if ($submission->hasErrors()) {
             $errors = $submission->getErrors();
