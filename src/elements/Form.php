@@ -1137,6 +1137,11 @@ class Form extends Element
         $this->_editingSubmission = $submission;
     }
 
+    public function getEditingSubmission(): ?Submission
+    {
+        return $this->_editingSubmission;
+    }
+
     /**
      * Whether we're editing a submission or not. Useful to turn off captchas.
      */

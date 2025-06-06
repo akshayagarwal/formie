@@ -456,6 +456,17 @@ class SubmissionsController extends Controller
 
         Formie::log("Submission triggered for ${handle}.");
 
+        // Ensure that the session has started, just in case
+        Craft::$app->getSession()->open();
+
+        Formie::log("Submission variables: " . Json::encode([
+            'handle' => $handle,
+            'pageIndex' => $pageIndex,
+            'goToPageId' => $goToPageId,
+            'completeSubmission' => $completeSubmission,
+            'submitAction' => $submitAction,
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
         /* @var Form $form */
         $form = $this->_getForm($handle);
 
@@ -471,16 +482,49 @@ class SubmissionsController extends Controller
         $defaultStatus = $form->getDefaultStatus();
         $errorMessage = $form->settings->getErrorMessage();
 
+        Formie::log("isEditingSubmission: " . Json::encode($form->isEditingSubmission()));
+        Formie::log("enableBackSubmission: " . Json::encode($formieSettings->enableBackSubmission));
+        Formie::log("pages: " . Json::encode($pages, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        Formie::log("currentPage: " . Json::encode($form->getCurrentPage(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
+        // Check session and session keys are working
+        $keys = ['formie', $form->id, $form->getSessionKey()];
+        $keys[] = 'pageId';
+        $keys = implode(':', array_filter($keys));
+
+        Formie::log("general session key: " . Json::encode([
+            'key' => $keys,
+            'data' => \craft\helpers\Session::get($keys),
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
+        $keys = ['formie', $form->id, $form->getSessionKey()];
+
+        if ($editingSubmission = $form->getEditingSubmission()) {
+            $keys[] = $editingSubmission->id;
+        }
+
+        $keys[] = 'pageId';
+        $keys = implode(':', array_filter($keys));
+
+        Formie::log("edit submission session key: " . Json::encode([
+            'key' => $keys,
+            'data' => \craft\helpers\Session::get($keys),
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
         // If we're going back, and want to  navigate without saving
         if ($submitAction === 'back' && !$formieSettings->enableBackSubmission) {
             // Ensure that we don't set the next page to `null` which would mean form completion
             $nextPage = $form->getPreviousPage(null, $submission, true) ?? $form->getCurrentPage();
+
+            Formie::log("nextPage: " . Json::encode($nextPage, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
             // Allow `goToPageId` to override session behaviour.
             // TODO: remove this when we sort out proper session/db layer
             if (is_numeric($goToPageId)) {
                 $nextPage = ArrayHelper::firstWhere($form->getPages(), 'id', $goToPageId) ?? $nextPage;
             }
+
+            Formie::log("nextPage: " . Json::encode($nextPage, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
             // Update the current page to reflect the next page
             $form->setCurrentPage($nextPage);
@@ -501,6 +545,8 @@ class SubmissionsController extends Controller
                 $form->setCurrentPage($currentPage);
             }
         }
+
+        Formie::log("currentPage after pageIndex: " . Json::encode($form->getCurrentPage(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
         // Allow full submission payload to be provided for multipage forms.
         // Skip straight to the last page.
@@ -523,6 +569,8 @@ class SubmissionsController extends Controller
         } else {
             $nextPage = $form->getNextPage(null, $submission);
         }
+
+        Formie::log("currentPage after condition: " . Json::encode($form->getCurrentPage(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
         $defaultStatus = $form->getDefaultStatus();
         $errorMessage = $form->settings->getErrorMessage();
