@@ -591,6 +591,9 @@ class SubmissionsController extends Controller
         }
 
         Formie::log("nextPage before check: " . Json::encode($nextPage, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        Formie::log("isIncomplete before check: " . Json::encode($submission->isIncomplete, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        Formie::log("validateCurrentPageOnly before check: " . Json::encode($submission->validateCurrentPageOnly, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        Formie::log("scenario before check: " . Json::encode($submission->scenario, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
         // Check if we're on the last page of the form, or need to keep going
         if (empty($nextPage)) {
@@ -615,6 +618,9 @@ class SubmissionsController extends Controller
 
         Formie::log("submitAction after event: " . $submitAction);
         Formie::log("isValid after event: " . $event->isValid);
+
+        Formie::log("isIncomplete after event: " . Json::encode($submission->isIncomplete, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        Formie::log("validateCurrentPageOnly after event: " . Json::encode($submission->validateCurrentPageOnly, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
         // Only validate for submitting, and if the event has marked it as invalid. If the event adds errors to the submission
         // model, and `validate()` is run again, it'll clear any errors. Instead, skip straight to regular error handling.

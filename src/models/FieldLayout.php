@@ -51,6 +51,12 @@ class FieldLayout extends CraftFieldLayout
 
         Formie::log("getVisibleCustomFieldElements");
 
+        try {
+            throw new \Exception('test');
+        } catch (\Throwable $e) {
+            Formie::log("trace: " . $e->getTraceAsString());
+        }
+
         // When using `setFieldSettings()` settings are only applied for `getCustomFields()` and not
         // for individual field layout elements. Fetch them here so we update shortly.
         $customFields = ArrayHelper::index($this->getCustomFields(), 'handle');
@@ -70,6 +76,11 @@ class FieldLayout extends CraftFieldLayout
                     if ($field->isConditionallyHidden($element)) {
                         $isVisible = false;
                     }
+
+                    Formie::log('fieldHandle = ' . $field->handle);
+                    Formie::log('isVisible = ' . $isVisible);
+                    Formie::log('instanceof Submission = ' . ($element instanceof Submission));
+                    Formie::log('validateCurrentPageOnly = ' . $element->validateCurrentPageOnly);
 
                     // Check when we're doing a submission from the front-end, and we choose to validate the current page only
                     // Remove any custom fields that aren't in the current page. These are added by default
