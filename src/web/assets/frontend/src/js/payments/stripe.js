@@ -40,11 +40,13 @@ export class FormieStripe extends FormiePaymentProvider {
     }
 
     onShow() {
+        console.log('stripe onShow');
         // Initialize the field only when it's visible
         this.loadStripe();
     }
 
     onHide() {
+        console.log('stripe onHide');
         // Field is hidden, so reset everything
         if (this.paymentElement) {
             // Kill off Stripe items
@@ -61,6 +63,7 @@ export class FormieStripe extends FormiePaymentProvider {
     }
 
     loadStripe() {
+        console.log('stripe loadStripe');
         try {
             // Fetch and attach the script only once - this is in case there are multiple forms on the page.
             // They all go to a single callback which resolves its loaded state
@@ -101,6 +104,7 @@ export class FormieStripe extends FormiePaymentProvider {
     }
 
     initStripe() {
+        console.log('stripe initStripe');
         // Prevent against mounting the card on a destroyed form (race condition with conditions and multi-init)
         // Probably should refactor this to handle registering observers (IntersectionObserver)
         if (this.form.destroyed) {
@@ -122,6 +126,7 @@ export class FormieStripe extends FormiePaymentProvider {
     }
 
     renderStripe() {
+        console.log('stripe renderStripe');
         try {
             const mode = this.isSubscription() ? 'subscription' : 'payment';
 
@@ -173,6 +178,7 @@ export class FormieStripe extends FormiePaymentProvider {
     }
 
     onValidate(e) {
+        console.log('stripe onValidate');
         // Don't validate if we're not submitting (going back, saving)
         // Check if the form has an invalid flag set, don't bother going further
         if (this.form.submitAction !== 'submit' || e.detail.invalid) {
@@ -195,12 +201,14 @@ export class FormieStripe extends FormiePaymentProvider {
             if (result.error) {
                 return this.addError(result.error.message);
             }
+            console.log('stripe this.elements.submit');
 
             this.submitHandler.submitForm();
         });
     }
 
     showPlaceholder(message, type) {
+        console.log('stripe showPlaceholder');
         this.$placeholder.innerHTML = message;
         this.$placeholder.classList.remove('fui-hidden');
 
@@ -210,10 +218,12 @@ export class FormieStripe extends FormiePaymentProvider {
     }
 
     hidePlaceholder() {
+        console.log('stripe hidePlaceholder');
         this.$placeholder.classList.add('fui-hidden');
     }
 
     onValidateConfirm(e) {
+        console.log('stripe onValidateConfirm');
         const { data } = e.detail;
 
         // Keep the spinner going for 3DS
@@ -227,6 +237,7 @@ export class FormieStripe extends FormiePaymentProvider {
         if (this.form.formTheme) {
             this.form.formTheme.updateFormHash();
         }
+        console.log(`stripe onValidateConfirm ${data.type}`);
 
         const confirmIntent = data.type === 'setup' ? this.stripe.confirmSetup : this.stripe.confirmPayment;
 
@@ -349,6 +360,7 @@ export class FormieStripe extends FormiePaymentProvider {
     }
 
     onAfterSubmit(e) {
+        console.log('stripe onAfterSubmit');
         // Clear the Stripe form
         if (this.paymentElement) {
             this.paymentElement.clear();

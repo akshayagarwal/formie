@@ -24,11 +24,13 @@ export class FormieRecaptchaV3 extends FormieCaptchaProvider {
     }
 
     onShow() {
+        console.log('captcha onShow');
         // Initialize the captcha only when it's visible
         this.initCaptcha();
     }
 
     onHide() {
+        console.log('captcha onHide');
         // Captcha is hidden, so reset everything
         this.onAfterSubmit();
 
@@ -38,6 +40,7 @@ export class FormieRecaptchaV3 extends FormieCaptchaProvider {
     }
 
     initCaptcha() {
+        console.log('captcha initCaptcha');
         // Fetch and attach the script only once - this is in case there are multiple forms on the page.
         // They all go to a single callback which resolves its loaded state
         if (!document.getElementById(this.recaptchaScriptId)) {
@@ -78,6 +81,7 @@ export class FormieRecaptchaV3 extends FormieCaptchaProvider {
     }
 
     renderCaptcha() {
+        console.log('captcha renderCaptcha');
         this.$placeholder = null;
 
         // Get the active page
@@ -135,6 +139,7 @@ export class FormieRecaptchaV3 extends FormieCaptchaProvider {
     }
 
     onValidate(e) {
+        console.log('captcha onValidate');
         // When not using Formie's theme JS, there's nothing preventing the form from submitting (the theme does).
         // And when the form is submitting, we can't query DOM elements, so stop early so the normal checks work.
         if (!this.$form.form.formTheme) {
@@ -143,11 +148,14 @@ export class FormieRecaptchaV3 extends FormieCaptchaProvider {
             // Get the submit action from the form hidden input. This is normally taken care of by the theme
             this.form.submitAction = this.$form.querySelector('[name="submitAction"]').value || 'submit';
         }
+        console.log(`captcha onValidate submitAction ${this.form.submitAction}`);
 
         // Don't validate if we're not submitting (going back, saving)
         if (this.form.submitAction !== 'submit' || this.$placeholder === null) {
             return;
         }
+
+        console.log(`captcha onValidate invalid ${e.detail.invalid}`);
 
         // Check if the form has an invalid flag set, don't bother going further
         if (e.detail.invalid) {
@@ -164,11 +172,19 @@ export class FormieRecaptchaV3 extends FormieCaptchaProvider {
     }
 
     onVerify(token) {
+        console.log('captcha onVerify');
+        console.log(token);
         // Submit the form - we've hijacked it up until now
         if (this.submitHandler) {
+            console.log('captcha onVerify submitHandler');
+
             // Run the next submit action for the form. TODO: make this better!
             if (this.submitHandler.validatePayment()) {
+                console.log('captcha onVerify validatePayment');
+
                 if (this.submitHandler.validateCustom()) {
+                    console.log('captcha onVerify validateCustom');
+
                     this.submitHandler.submitForm();
                 }
             }
@@ -176,6 +192,7 @@ export class FormieRecaptchaV3 extends FormieCaptchaProvider {
     }
 
     onAfterSubmit(e) {
+        console.log('captcha onAfterSubmit');
         // For a multi-page form, we need to remove the current captcha, then render the next pages.
         // For a single-page form, reset the recaptcha, in case we want to fill out the form again
         // `renderCaptcha` will deal with both cases
